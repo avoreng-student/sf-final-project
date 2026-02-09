@@ -211,3 +211,35 @@ where t.type_id = 25 or t.type_id=28
 from tips, tests, tasks, solutions 
 Выводы: всего пользователями были куплены за кодкоины 118 подсказок, 989 тестов, 1675 задач, 423 решения.
 Данные данной метрики показывают, что пользователи чаще всего готовы платить за задачи, именно поэтому целесообразно включить дополнительные задачи/задачи повышенной сложности в тариф премиум.
+
+
+Дополнительное задание
+with work_table  as (
+	select 
+	user_id, 
+	created_at
+from codesubmit
+union all
+	select 
+	user_id, 
+	created_at
+from teststart
+),
+date_time_table as (
+	select *, 
+	extract (isodow from created_at::date) as nd, 
+	to_char(created_at::date, 'Day') as week_day,
+	date_part('hour', created_at) as hour
+from work_table
+)
+	select 
+	nd, 
+	week_day, 
+	hour, 
+	count(user_id) as activities,
+	count(distinct user_id) as users 
+from date_time_table
+group by nd, week_day, hour
+order by users asc
+-----
+Выводы: наибольшая активность пользователей (>50) приходится на рабочие дни в послеобеденное время. Релиз точно не стоит делать на выходных, поскольку там низкая активность пользователей.
